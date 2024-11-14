@@ -2,6 +2,7 @@ package com.example.listofproductes.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,18 +28,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.listofproductes.model.ProductModel
 import com.example.listofproductes.viewmodel.ProductViewModel
+import com.example.productiveness.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun UserListScreen(navHostController: NavHostController, viewModel: ProductViewModel) {
+
     val showShimmer: Boolean by viewModel.showShimmer.observeAsState(
         initial = false
     )
@@ -50,7 +55,7 @@ fun UserListScreen(navHostController: NavHostController, viewModel: ProductViewM
         .filterNot { it?.productCategory == null }
         .groupBy { it?.productCategory }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize() .padding(bottom = 10.dp) ) {
 
         TopAppBar(
             title = {
@@ -60,12 +65,13 @@ fun UserListScreen(navHostController: NavHostController, viewModel: ProductViewM
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
 
-        if (showShimmer){
-            items(10){
-          ShimmerEffect()
-}
-        }else{
-                         groupedProducts.forEach { (category, products) ->
+            if (showShimmer) {
+                items(10) {
+                    ShimmerEffect()
+                }
+            } else {
+
+                groupedProducts.forEach { (category, products) ->
 
                     item {
                         if (category != null) {
@@ -82,7 +88,7 @@ fun UserListScreen(navHostController: NavHostController, viewModel: ProductViewM
 
                     itemsIndexed(products) { index, product ->
                         product?.let {
-                            ProductItem(sneaker = it)
+                            ProductItem(product = it, navController = navHostController)
                             if (index < products.size - 1) {
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
@@ -90,21 +96,25 @@ fun UserListScreen(navHostController: NavHostController, viewModel: ProductViewM
                     }
 
 
-
                 }
 
-        }
+            }
 
+        }
     }
-}}
+}
+
 @Composable
-fun ProductItem(sneaker: ProductModel) {
+fun ProductItem(product: ProductModel, navController: NavHostController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
             .padding(start = 13.dp, end = 13.dp)
-            .background(Color.White),
+            .background(Color.White)
+            .clickable {
+                navController.navigate( NavRote.ProductDetailScreen.withArgs(product.id.toString()))
+            },
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -114,23 +124,16 @@ fun ProductItem(sneaker: ProductModel) {
             Box(
                 modifier = Modifier
                     .height(200.dp)
-                    .width(100.dp)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFFF5F5F5),
-                                Color(0xFFE0E0E0)
-                            )
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
+                    .width(100.dp),
                 contentAlignment = Alignment.Center
             ) {
-                sneaker.featuredImage?.let {
-                    Image(
-                        painter = rememberAsyncImagePainter(it), // Load image from URL
+                product.featuredImage?.let {
+                    AsyncImage(
+                        model = it,
                         contentDescription = "Product Image",
-                        modifier = Modifier.size(200.dp)
+                        modifier = Modifier.size(200.dp),
+                        error = painterResource(id = R.drawable.baseline_error_24),
+
                     )
                 }
             }
@@ -141,10 +144,14 @@ fun ProductItem(sneaker: ProductModel) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = if (sneaker.name?.contains(sneaker.brand ?: "", ignoreCase = true) == true) {
-                        sneaker.name ?: ""
+                    text = if (product.name?.contains(
+                            product.brand ?: "",
+                            ignoreCase = true
+                        ) == true
+                    ) {
+                        product.name ?: ""
                     } else {
-                        "${sneaker.brand ?: ""} ${sneaker.name ?: ""}"
+                        "${product.brand ?: ""} ${product.name ?: ""}"
                     },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -155,7 +162,7 @@ fun ProductItem(sneaker: ProductModel) {
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                sneaker.description?.let {
+                product.description?.let {
                     Text(
                         text = it,
                         fontSize = 12.sp,
@@ -166,7 +173,7 @@ fun ProductItem(sneaker: ProductModel) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 // Display Product Display Text (e.g., size or screen type)
-                sneaker.display?.let {
+                product.display?.let {
                     Text(
                         text = it,
                         fontSize = 14.sp,

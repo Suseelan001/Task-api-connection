@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     kotlin("kapt")
-    id ("dagger.hilt.android.plugin")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -82,9 +82,6 @@ dependencies {
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-
-
-
     // Networking libraries
     implementation(libs.okhttp)
     implementation(libs.retrofit)
@@ -95,12 +92,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.compose)
 
+    implementation(libs.coil.compose)
 
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-
-    implementation (libs.coil.compose) // Or the latest version
-
-    implementation (libs.shimmer)
-
-
+    // Shimmer
+    implementation(libs.shimmer)
 }
